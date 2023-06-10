@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -47,22 +47,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := mux.NewRouter()
-	router.HandleFunc("/", intersectHandler).Methods("POST")
-	router.HandleFunc("/", getIntersectionsHandler).Methods("GET")
+	// Initialize Echo instance
+	e := echo.New()
 
-	server := &http.Server{
-		Handler:      router,
-		Addr:         ":8080",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
-	log.Println("Starting web server on port 8080...")
-	log.Fatal(server.ListenAndServe())
+	// Routes
+	e.POST("/", intersectHandler)
+	e.GET("/", getIntersectionsHandler)
+
+	// Start the server
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
-func intersectHandler(w http.ResponseWriter, r *http.Request) {
+func intersectHandler(c echo.Context) error {
 	log.Println("Received POST request")
 
 	var data struct {
@@ -70,11 +70,10 @@ func intersectHandler(w http.ResponseWriter, r *http.Request) {
 		Input []Rectangle `json:"input"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&data)
+	err := c.Bind(&data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		log.Println("Failed to decode JSON:", err)
-		return
+		log.Println("Failed to bind JSON:", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request payload"})
 	}
 
 	for _, rect := range data.Input {
@@ -83,22 +82,22 @@ func intersectHandler(w http.ResponseWriter, r *http.Request) {
 				Rectangle: rect,
 				Time:      time.Now().Format("2006-01-02 15:04:05"),
 			}
+
 			// Save intersection to database
 			saveIntersection(intersection)
 		}
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	return c.NoContent(http.StatusNoContent)
 }
 
-func getIntersectionsHandler(w http.ResponseWriter, r *http.Request) {
+func getIntersectionsHandler(c echo.Context) error {
 	log.Println("Received GET request")
 
 	// Retrieve intersections from database
 	intersections := getIntersections()
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(intersections)
+	return c.JSON(http.StatusOK, intersections)
 }
 
 func intersects(rect1, rect2 Rectangle) bool {
@@ -128,11 +127,11 @@ func saveIntersection(intersection Intersection) {
 	)
 	if err != nil {
 		log.Println(err)
-		return
 	}
 }
 
 func getIntersections() []Intersection {
+
 	rows, err := db.Query("SELECT x, y, width, height, time FROM intersections")
 	if err != nil {
 		log.Println(err)
