@@ -54,11 +54,23 @@ go mod tidy
 Please note that the commands assume that the main file containing the code is named main.go and the project is initialized with the module path rect.ir/r. You can adjust these commands according to your project's structure and needs.
 
 ## Running the API
-To run the web server, execute the following command:
+To run the web server, you have two options:
+1. Option 1: Running with go run
+
+If you want to run the API without building an executable file, execute the following command:
 ```shell
 go run main.go
 ```
-This will start the API server on localhost at port 8080. You can then make POST requests to calculate and save intersections, and GET requests to retrieve the saved intersections.
+This will start the API server on localhost at port 8080. You can then make POST requests to http://localhost:8080 to calculate and save intersections, and GET requests to http://localhost:8080 to retrieve the saved intersections.
+
+2. Option 2: Building and running
+
+If you prefer to build the project and then run the executable, execute the following commands:
+```shell
+go build
+./filtering_service
+```
+The go build command compiles the project and generates an executable file named filtering_service. The second command runs the executable, starting the API server on localhost at port 8080. You can then make requests to the API as described above.
 
 Note: Make sure the SQLite database file rectangles.db is present in the same directory as the main.go file.
 
