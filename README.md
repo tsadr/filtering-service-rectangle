@@ -48,7 +48,7 @@ Note: Make sure to have Go and the necessary dependencies installed before runni
 Make sure you have Go and the necessary dependencies installed before running the API. To prepare the dependencies, run the following commands:
 ```shell
 cd src
-go mod init rect.ir/r
+go mod init rect.ir/filtering_service
 go mod tidy
 ```
 Please note that the commands assume that the main file containing the code is named main.go and the project is initialized with the module path rect.ir/r. You can adjust these commands according to your project's structure and needs.

@@ -1,4 +1,4 @@
-module rect.ir/r
+module rect.ir/filtering_service
 
 go 1.20
 
