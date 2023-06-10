@@ -47,6 +47,7 @@ Note: Make sure to have Go and the necessary dependencies installed before runni
 ## Dependencies
 Make sure you have Go and the necessary dependencies installed before running the API. To prepare the dependencies, run the following commands:
 ```shell
+cd src
 go mod init rect.ir/r
 go mod tidy
 ```
